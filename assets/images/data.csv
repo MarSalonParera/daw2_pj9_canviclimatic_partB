@@ -1,4 +1,6 @@
-id,name,age,description
-1,Carbón,300M años,Combustible fósil que libera CO₂ al quemarse
-2,Petróleo,250M años,Usado en transporte y energía, genera emisiones de CO₂
-3,Gas Natural,150M años,Combustible fósil más limpio que el carbón, pero aún emite CO₂
+source,category,co2Kg,impactLevel,recommendation,location,createdAt
+Desplazamiento en coche al instituto,Transporte,8.4,Alta,Comparte coche o usa transporte publico,Sabadell,2026-04-08T08:00:00.000Z
+Pedido de comida con envases,Consumo,3.2,Media,Lleva tu propia botella y reduce envases,Barcelona,2026-04-10T12:30:00.000Z
+Uso intensivo de aire acondicionado,Energia,6.7,Alta,Ajusta la temperatura a 24 grados,Terrassa,2026-04-12T16:45:00.000Z
+Ruta en bicicleta,Movilidad sostenible,0.6,Baja,Mantener el habito y sumar trayectos cortos,Girona,2026-04-13T09:20:00.000Z
+Compra local de temporada,Consumo responsable,1.1,Baja,Prioriza productos de proximidad,Tarragona,2026-04-15T18:10:00.000Z
