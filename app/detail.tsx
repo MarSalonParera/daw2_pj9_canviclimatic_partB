@@ -54,9 +54,6 @@ export default function DetailScreen() {
       )}
 
       <View style={styles.detailCard}>
-        <Text style={styles.label}>Ubicación</Text>
-        <Text style={styles.value}>{record.location}</Text>
-
         <Text style={styles.label}>Nivel de impacto guardado</Text>
         <Text style={styles.value}>{record.impactLevel}</Text>
 

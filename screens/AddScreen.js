@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button } from 'react-native';
+import { useState } from 'react';
+import { Button, TextInput, View } from 'react-native';
 import { addFossil } from '../database/db';
 
 export default function AddScreen({ navigation }) {

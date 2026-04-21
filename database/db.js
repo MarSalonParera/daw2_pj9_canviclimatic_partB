@@ -5,12 +5,12 @@ import { Platform } from 'react-native';
 
 const DB_NAME = 'co2-tracker.db';
 const CSV_ASSET = require('../assets/images/data.csv');
-const CSV_WEB_FALLBACK = `source,category,co2Kg,impactLevel,recommendation,location,createdAt
-Desplazamiento en coche al instituto,Transporte,8.4,Alta,Comparte coche o usa transporte publico,Sabadell,2026-04-08T08:00:00.000Z
-Pedido de comida con envases,Consumo,3.2,Media,Lleva tu propia botella y reduce envases,Barcelona,2026-04-10T12:30:00.000Z
-Uso intensivo de aire acondicionado,Energia,6.7,Alta,Ajusta la temperatura a 24 grados,Terrassa,2026-04-12T16:45:00.000Z
-Ruta en bicicleta,Movilidad sostenible,0.6,Baja,Mantener el habito y sumar trayectos cortos,Girona,2026-04-13T09:20:00.000Z
-Compra local de temporada,Consumo responsable,1.1,Baja,Prioriza productos de proximidad,Tarragona,2026-04-15T18:10:00.000Z`;
+const CSV_WEB_FALLBACK = `source,category,co2Kg,impactLevel,recommendation,createdAt
+Desplazamiento en coche al instituto,Transporte,8.4,Alta,Comparte coche o usa transporte publico,2026-04-08T08:00:00.000Z
+Pedido de comida con envases,Consumo,3.2,Media,Lleva tu propia botella y reduce envases,2026-04-10T12:30:00.000Z
+Uso intensivo de aire acondicionado,Energia,6.7,Alta,Ajusta la temperatura a 24 grados,2026-04-12T16:45:00.000Z
+Ruta en bicicleta,Movilidad sostenible,0.6,Baja,Mantener el habito y sumar trayectos cortos,2026-04-13T09:20:00.000Z
+Compra local de temporada,Consumo responsable,1.1,Baja,Prioriza productos de proximidad,2026-04-15T18:10:00.000Z`;
 
 class EmissionRecord {
   // RUBRICA: Lògica de l’aplicació i POO
@@ -22,7 +22,6 @@ class EmissionRecord {
     co2Kg,
     impactLevel,
     recommendation,
-    location,
     photoUri = null,
     createdAt,
   }) {
@@ -32,7 +31,6 @@ class EmissionRecord {
     this.co2Kg = Number(co2Kg);
     this.impactLevel = impactLevel;
     this.recommendation = recommendation;
-    this.location = location;
     this.photoUri = photoUri;
     this.createdAt = createdAt;
   }
@@ -69,7 +67,7 @@ const parseCsv = (csvText) => {
   const headers = headerLine.split(',').map((column) => column.trim());
 
   return rows
-    .map((row) => row.split(',').map((value) => value.trim()))
+    .map((row) => row.split(',').map((value) => value ? value.trim() : ""))
     .filter((row) => row.length === headers.length)
     .map((row) =>
       headers.reduce((accumulator, header, index) => {
@@ -101,7 +99,6 @@ const ensureSchema = async (db) => {
       co2Kg REAL NOT NULL,
       impactLevel TEXT NOT NULL,
       recommendation TEXT NOT NULL,
-      location TEXT NOT NULL,
       photoUri TEXT,
       createdAt TEXT NOT NULL
     );
@@ -117,19 +114,26 @@ const seedDatabase = async (db) => {
 
   const rows = await loadSeedFromCsv();
 
+  const getImpact = (co2) => {
+    const val = Number(co2);
+    if (val >= 10) return 'Alta';
+    if (val >= 5) return 'Media';
+    return 'Baja';
+  };
+
   for (const row of rows) {
+    const co2 = Number(row.co2Kg);
     await db.runAsync(
       `
         INSERT INTO emissions
-        (source, category, co2Kg, impactLevel, recommendation, location, photoUri, createdAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (source, category, co2Kg, impactLevel, recommendation, photoUri, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       row.source,
       row.category,
-      Number(row.co2Kg),
-      row.impactLevel,
+      co2,
+      getImpact(co2), // Usamos la lógica de la app en lugar del texto del CSV
       row.recommendation,
-      row.location,
       null,
       row.createdAt
     );
@@ -172,15 +176,14 @@ export const addEmissionRecord = async (record) => {
   await db.runAsync(
     `
       INSERT INTO emissions
-      (source, category, co2Kg, impactLevel, recommendation, location, photoUri, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (source, category, co2Kg, impactLevel, recommendation, photoUri, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
     record.source,
     record.category,
     Number(record.co2Kg),
     record.impactLevel,
     record.recommendation,
-    record.location,
     record.photoUri || null,
     createdAt
   );

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "FossilApp",
-    "slug": "FossilApp",
+    "name": "co2.app",
+    "slug": "co2-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "fossilapp",
+    "scheme": "co2app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { useState } from 'react';
+import { FlatList, Text, View } from 'react-native';
 
 export default function ListScreen() {
   const [data, setData] = useState([

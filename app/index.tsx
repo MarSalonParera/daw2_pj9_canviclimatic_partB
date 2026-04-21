@@ -51,22 +51,7 @@ export default function HomeScreen() {
         <MetricCard label="Categoría dominante" value={stats.topCategory} accent="#7A5CBB" />
       </View>
 
-      <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Dónde se cumple la rúbrica</Text>
-        <Text style={styles.sectionText}>
-          Lógica y POO: navegación con varias pantallas, estado en los formularios y props en los
-          componentes reutilizables.
-        </Text>
-        <Text style={styles.sectionText}>
-          Datos: SQLite con carga inicial desde CSV.
-        </Text>
-        <Text style={styles.sectionText}>
-          Media: desde el formulario puedes abrir la cámara y mostrar la foto dentro de la app.
-        </Text>
-        <Text style={styles.sectionText}>
-          Estilos: diseño propio, adaptado a móvil y con `flex` para distribuir tarjetas y listas.
-        </Text>
-      </View>
+  
 
       <Pressable style={styles.primaryButton} onPress={() => router.push('/list')}>
         <Text style={styles.primaryButtonText}>Ver registros</Text>

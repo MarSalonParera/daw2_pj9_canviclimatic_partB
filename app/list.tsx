@@ -1,7 +1,7 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { EmissionCard } from '../components/EmissionCard';
 import { getEmissionRecords } from '../database/db';
 
