@@ -1,23 +1,18 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { EmissionRecord } from '../database/db';
 
 type EmissionCardProps = {
-  item: {
-    id: number;
-    source: string;
-    category: string;
-    co2Kg: number;
-    impactLabel: string;
-    formattedDate: string;
-    photoUri?: string | null;
-  };
+  item: EmissionRecord;
   onPress: (id: number) => void;
 };
 
 // RUBRICA: Lògica de l’aplicació i POO (props y componentes)
 // Ubicación: componente reutilizable del listado que recibe item y acción por props.
 export function EmissionCard({ item, onPress }: EmissionCardProps) {
+  // Como el id en la clase es opcional pero en la lista siempre existe, 
+  // usamos 'item.id!' para asegurar a TS que no es nulo aquí.
   return (
-    <Pressable style={styles.card} onPress={() => onPress(item.id)}>
+    <Pressable style={styles.card} onPress={() => onPress(item.id!)}>
       <View style={styles.row}>
         <View style={styles.mainContent}>
           <Text style={styles.category}>{item.category}</Text>

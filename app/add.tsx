@@ -34,12 +34,6 @@ const SUGGESTED_ACTIVITIES = [
 
 const CATEGORIES = [...new Set(SUGGESTED_ACTIVITIES.map(a => a.category))];
 
-const getImpactLevel = (co2Kg: number) => {
-  if (co2Kg >= 10) return 'Alta';
-  if (co2Kg >= 5) return 'Media';
-  return 'Baja';
-};
-
 export default function AddScreen() {
   const router = useRouter();
 
@@ -125,7 +119,6 @@ export default function AddScreen() {
         source,
         category,
         co2Kg: numericCo2,
-        impactLevel: getImpactLevel(numericCo2),
         recommendation,
         photoUri,
       });

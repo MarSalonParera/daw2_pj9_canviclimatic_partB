@@ -12,7 +12,27 @@ Uso intensivo de aire acondicionado,Energia,6.7,Alta,Ajusta la temperatura a 24 
 Ruta en bicicleta,Movilidad sostenible,0.6,Baja,Mantener el habito y sumar trayectos cortos,2026-04-13T09:20:00.000Z
 Compra local de temporada,Consumo responsable,1.1,Baja,Prioriza productos de proximidad,2026-04-15T18:10:00.000Z`;
 
-class EmissionRecord {
+export interface IEmissionRecord {
+  id?: number;
+  source: string;
+  category: string;
+  co2Kg: number;
+  impactLevel?: string;
+  recommendation: string;
+  photoUri?: string | null;
+  createdAt: string;
+}
+
+export class EmissionRecord {
+  id?: number;
+  source: string;
+  category: string;
+  co2Kg: number;
+  impactLevel?: string;
+  recommendation: string;
+  photoUri: string | null;
+  createdAt: string;
+
   // RUBRICA: Lògica de l’aplicació i POO
   // Ubicación: modelo/clase para encapsular la información y comportamiento de cada registro.
   constructor({
@@ -24,7 +44,7 @@ class EmissionRecord {
     recommendation,
     photoUri = null,
     createdAt,
-  }) {
+  }: IEmissionRecord) {
     this.id = id;
     this.source = source;
     this.category = category;
@@ -35,26 +55,30 @@ class EmissionRecord {
     this.createdAt = createdAt;
   }
 
-  get impactLabel() {
-    if (this.co2Kg >= 10) {
+  // Centralizamos la lógica aquí para evitar duplicados
+  static getImpactLevel(co2: number | string): string {
+    const val = Number(co2);
+    if (val >= 10) {
       return 'Alta';
     }
-
-    if (this.co2Kg >= 5) {
+    if (val >= 5) {
       return 'Media';
     }
-
     return 'Baja';
   }
 
-  get formattedDate() {
+  get impactLabel(): string {
+    return EmissionRecord.getImpactLevel(this.co2Kg);
+  }
+
+  get formattedDate(): string {
     return new Date(this.createdAt).toLocaleDateString('es-ES');
   }
 }
 
-let databasePromise;
+let databasePromise: Promise<SQLite.SQLiteDatabase> | undefined;
 
-const openDatabase = async () => {
+const openDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
   if (!databasePromise) {
     databasePromise = SQLite.openDatabaseAsync(DB_NAME);
   }
@@ -62,7 +86,7 @@ const openDatabase = async () => {
   return databasePromise;
 };
 
-const parseCsv = (csvText) => {
+const parseCsv = (csvText: string): any[] => {
   const [headerLine, ...rows] = csvText.trim().split(/\r?\n/);
   const headers = headerLine.split(',').map((column) => column.trim());
 
@@ -70,14 +94,14 @@ const parseCsv = (csvText) => {
     .map((row) => row.split(',').map((value) => value ? value.trim() : ""))
     .filter((row) => row.length === headers.length)
     .map((row) =>
-      headers.reduce((accumulator, header, index) => {
+      headers.reduce((accumulator: Record<string, any>, header, index) => {
         accumulator[header] = row[index];
         return accumulator;
       }, {})
     );
 };
 
-const loadSeedFromCsv = async () => {
+const loadSeedFromCsv = async (): Promise<any[]> => {
   if (Platform.OS === 'web') {
     return parseCsv(CSV_WEB_FALLBACK);
   }
@@ -89,7 +113,7 @@ const loadSeedFromCsv = async () => {
   return parseCsv(csvText);
 };
 
-const ensureSchema = async (db) => {
+const ensureSchema = async (db: SQLite.SQLiteDatabase): Promise<void> => {
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS emissions (
@@ -105,21 +129,14 @@ const ensureSchema = async (db) => {
   `);
 };
 
-const seedDatabase = async (db) => {
-  const result = await db.getFirstAsync('SELECT COUNT(*) AS total FROM emissions');
+const seedDatabase = async (db: SQLite.SQLiteDatabase): Promise<void> => {
+  const result = await db.getFirstAsync<{ total: number }>('SELECT COUNT(*) AS total FROM emissions');
 
   if (result?.total > 0) {
     return;
   }
 
   const rows = await loadSeedFromCsv();
-
-  const getImpact = (co2) => {
-    const val = Number(co2);
-    if (val >= 10) return 'Alta';
-    if (val >= 5) return 'Media';
-    return 'Baja';
-  };
 
   for (const row of rows) {
     const co2 = Number(row.co2Kg);
@@ -132,7 +149,7 @@ const seedDatabase = async (db) => {
       row.source,
       row.category,
       co2,
-      getImpact(co2), // Usamos la lógica de la app en lugar del texto del CSV
+      EmissionRecord.getImpactLevel(co2), // Usamos el método centralizado
       row.recommendation,
       null,
       row.createdAt
@@ -140,7 +157,7 @@ const seedDatabase = async (db) => {
   }
 };
 
-const mapRecord = (row) => new EmissionRecord(row);
+const mapRecord = (row: any): EmissionRecord => new EmissionRecord(row);
 
 export const initDB = async () => {
   const db = await openDatabase();
@@ -151,7 +168,7 @@ export const initDB = async () => {
   await seedDatabase(db);
 };
 
-export const getEmissionRecords = async () => {
+export const getEmissionRecords = async (): Promise<EmissionRecord[]> => {
   // RUBRICA: Emmagatzematge de dades
   // Ubicación: lectura de registros almacenados en SQLite para mostrarlos en pantalla.
   const db = await openDatabase();
@@ -161,17 +178,18 @@ export const getEmissionRecords = async () => {
   return rows.map(mapRecord);
 };
 
-export const getEmissionRecordById = async (id) => {
+export const getEmissionRecordById = async (id: string | number): Promise<EmissionRecord | null> => {
   const db = await openDatabase();
   const row = await db.getFirstAsync('SELECT * FROM emissions WHERE id = ?', Number(id));
   return row ? mapRecord(row) : null;
 };
 
-export const addEmissionRecord = async (record) => {
+export const addEmissionRecord = async (record: Omit<IEmissionRecord, 'id' | 'createdAt'>): Promise<void> => {
   // RUBRICA: Emmagatzematge de dades
   // Ubicación: inserción persistente de nuevos datos en SQLite.
   const db = await openDatabase();
   const createdAt = new Date().toISOString();
+  const co2 = Number(record.co2Kg);
 
   await db.runAsync(
     `
@@ -181,17 +199,32 @@ export const addEmissionRecord = async (record) => {
     `,
     record.source,
     record.category,
-    Number(record.co2Kg),
-    record.impactLevel,
+    co2,
+    EmissionRecord.getImpactLevel(co2), // La lógica se aplica aquí al guardar
     record.recommendation,
     record.photoUri || null,
     createdAt
   );
 };
 
-export const getDashboardStats = async () => {
+export interface IDashboardStats {
+  totalRecords: number;
+  totalCo2: number;
+  averageCo2: number;
+  topCategory: string;
+}
+
+export const getDashboardStats = async (): Promise<IDashboardStats> => {
   const db = await openDatabase();
-  const totals = await db.getFirstAsync(`
+
+  // Definimos una interfaz local para el resultado de la suma
+  interface ITotals {
+    totalRecords: number;
+    totalCo2: number;
+    averageCo2: number;
+  }
+
+  const totals = await db.getFirstAsync<ITotals>(`
     SELECT
       COUNT(*) AS totalRecords,
       ROUND(COALESCE(SUM(co2Kg), 0), 1) AS totalCo2,
@@ -199,7 +232,7 @@ export const getDashboardStats = async () => {
     FROM emissions
   `);
 
-  const topCategory = await db.getFirstAsync(`
+  const topCategory = await db.getFirstAsync<{ category: string }>(`
     SELECT category, ROUND(SUM(co2Kg), 1) AS total
     FROM emissions
     GROUP BY category

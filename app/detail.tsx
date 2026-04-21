@@ -1,13 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { getEmissionRecordById } from '../database/db';
+import { EmissionRecord, getEmissionRecordById } from '../database/db';
 
 export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   // RUBRICA: Lògica de l’aplicació i POO (estado)
   // Ubicación: estado local del registro cargado para la pantalla de detalle.
-  const [record, setRecord] = useState<any | null>(null);
+  const [record, setRecord] = useState<EmissionRecord | null>(null);
 
   useEffect(() => {
     const loadRecord = async () => {

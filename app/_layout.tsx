@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { initDB } from '../database/db';
 
 export default function Layout() {

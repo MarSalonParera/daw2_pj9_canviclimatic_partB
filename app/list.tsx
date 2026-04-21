@@ -3,14 +3,14 @@ import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { EmissionCard } from '../components/EmissionCard';
-import { getEmissionRecords } from '../database/db';
+import { EmissionRecord, getEmissionRecords } from '../database/db';
 
 export default function ListScreen() {
   const router = useRouter();
   // RUBRICA: Lògica de l’aplicació i POO (estados)
   // Ubicación: estado de búsqueda y estado de la colección mostrada en pantalla.
   const [search, setSearch] = useState('');
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<EmissionRecord[]>([]);
 
   const loadRecords = async () => {
     const data = await getEmissionRecords();
@@ -46,7 +46,7 @@ export default function ListScreen() {
 
       <FlatList
         data={filteredRecords}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item, index) => item.id ? String(item.id) : String(index)}
         renderItem={({ item }) => (
           // RUBRICA: Lògica de l’aplicació i POO (props)
           // Ubicación: cada registro se pasa por props al componente EmissionCard.
