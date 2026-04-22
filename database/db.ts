@@ -132,7 +132,7 @@ const ensureSchema = async (db: SQLite.SQLiteDatabase): Promise<void> => {
 const seedDatabase = async (db: SQLite.SQLiteDatabase): Promise<void> => {
   const result = await db.getFirstAsync<{ total: number }>('SELECT COUNT(*) AS total FROM emissions');
 
-  if (result?.total > 0) {
+  if (result && result.total > 0) {
     return;
   }
 
