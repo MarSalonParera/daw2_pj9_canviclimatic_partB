@@ -184,6 +184,22 @@ export const getEmissionRecordById = async (id: string | number): Promise<Emissi
   return row ? mapRecord(row) : null;
 };
 
+export const deleteEmissionRecord = async (id: number): Promise<void> => {
+  const db = await openDatabase();
+  const record = await getEmissionRecordById(id);
+  
+  // Intentamos borrar el archivo físico de la foto si existe (solo en móvil)
+  if (record?.photoUri && Platform.OS !== 'web' && FileSystem.documentDirectory && record.photoUri.startsWith(FileSystem.documentDirectory)) {
+    try {
+      await FileSystem.deleteAsync(record.photoUri, { idempotent: true });
+    } catch (error) {
+      console.error("Error al eliminar el archivo de imagen:", error);
+    }
+  }
+  
+  await db.runAsync('DELETE FROM emissions WHERE id = ?', id);
+};
+
 export const addEmissionRecord = async (record: Omit<IEmissionRecord, 'id' | 'createdAt'>): Promise<void> => {
   // RUBRICA: Emmagatzematge de dades
   // Ubicación: inserción persistente de nuevos datos en SQLite.

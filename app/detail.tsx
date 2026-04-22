@@ -1,10 +1,11 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { EmissionRecord, getEmissionRecordById } from '../database/db';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { deleteEmissionRecord, EmissionRecord, getEmissionRecordById } from '../database/db';
 
 export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   // RUBRICA: Lògica de l’aplicació i POO (estado)
   // Ubicación: estado local del registro cargado para la pantalla de detalle.
   const [record, setRecord] = useState<EmissionRecord | null>(null);
@@ -21,6 +22,24 @@ export default function DetailScreen() {
 
     loadRecord();
   }, [id]);
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Eliminar registro',
+      '¿Estás seguro de que quieres borrar este registro? Esta acción no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: async () => {
+            await deleteEmissionRecord(Number(id));
+            router.back(); // Volvemos al listado
+          }
+        },
+      ]
+    );
+  };
 
   if (!record) {
     return (
@@ -63,6 +82,10 @@ export default function DetailScreen() {
         <Text style={styles.label}>Recomendación</Text>
         <Text style={styles.value}>{record.recommendation}</Text>
       </View>
+
+      <Pressable style={styles.deleteButton} onPress={handleDelete}>
+        <Text style={styles.deleteButtonText}>Eliminar registro</Text>
+      </Pressable>
 
       {/* RUBRICA: Ús de la media 
           Ubicación: detalle donde se muestra la imagen guardada en el registro. */}
@@ -148,5 +171,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#17352A',
+  },
+  deleteButton: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 30,
+  },
+  deleteButtonText: {
+    color: '#991B1B',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
